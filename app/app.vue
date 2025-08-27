@@ -1,6 +1,6 @@
 <template>
   <div>
-    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-sm">
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-sm shadow-sm">
       <nav class="border-b border-gray-200">
         <div class="container mx-auto px-4 py-4 flex justify-center items-center">
           <a href="/" class="flex items-center gap-3">
@@ -48,7 +48,7 @@
           <div v-if="filteredProducts.length > 0" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             <div v-for="product in filteredProducts" :key="product.id" class="bg-white rounded-2xl border border-gray-200 text-center cursor-pointer flex flex-col overflow-hidden group" @click="openProductDetails(product)">
               <div class="h-48 p-4 flex items-center justify-center">
-                <img :src="product.image" :alt="product.name" class="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300" />
+                <img :src="product.gallery[0]" :alt="product.name" class="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300" />
               </div>
               <div class="p-4 border-t border-gray-100 flex flex-col flex-grow">
                 <h3 class="text-base font-bold h-12">{{ product.name }}</h3>
@@ -73,7 +73,7 @@
             <h2 class="text-3xl font-extrabold">What Our Customers Say</h2>
           </div>
           <div class="flex animate-scroll" @mouseover="pauseAnimation" @mouseleave="resumeAnimation">
-            <div v-for="(review, index) in reviews.concat(reviews)" :key="index" class="flex-shrink-0 w-80 bg-white p-6 rounded-2xl shadow-md mx-4">
+            <div v-for="(review, index) in duplicatedReviews" :key="index" class="flex-shrink-0 w-80 bg-white p-6 rounded-2xl shadow-md mx-4">
               <div class="flex mb-4">
                 <svg v-for="i in 5" :key="i" class="h-5 w-5" :class="i <= review.stars ? 'text-amber-400' : 'text-gray-300'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.868 2.884c.321-.662 1.135-.662 1.456 0l1.96 4.053a.75.75 0 00.563.41l4.47.652c.704.103.986.966.473 1.455l-3.234 3.149a.75.75 0 00-.216.664l.762 4.453c.121.702-.616 1.248-1.246.914l-4.002-2.103a.75.75 0 00-.702 0l-4.002 2.103c-.63.334-1.367-.212-1.246-.914l.762-4.453a.75.75 0 00-.216-.664l-3.234-3.149a.75.75 0 01.473-1.455l4.47-.652a.75.75 0 00.563-.41l1.96-4.053z" clip-rule="evenodd"></path></svg>
               </div>
@@ -112,7 +112,7 @@
             <div v-if="cart.length === 0" class="text-center text-gray-500 py-16">Your cart is empty.</div>
             <div v-else class="space-y-6">
                 <div v-for="item in cart" :key="item.cartId" class="flex items-center gap-4">
-                    <img :src="getProductById(item.id)?.image" class="w-20 h-20 object-contain rounded-lg border">
+                    <img :src="getProductById(item.id)?.gallery[0]" class="w-20 h-20 object-contain rounded-lg border">
                     <div class="flex-grow"><p class="font-bold">{{ getProductById(item.id)?.name }}</p><p class="text-sm text-gray-500">{{ item.variantName }}</p><p class="text-sm">{{ formatPrice(getVariantPrice(item.id, item.variantName)) }} x {{ item.quantity }}</p></div>
                     <button @click="removeFromCart(item.cartId)" class="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-600">&times;</button>
                 </div>
@@ -126,7 +126,14 @@
       <div v-if="selectedProduct" class="fixed top-0 right-0 h-full w-full max-w-md bg-white flex flex-col transition-transform duration-300" :class="{ 'translate-x-0': isDetailOpen, 'translate-x-full': !isDetailOpen }" @click.stop>
         <header class="p-6 border-b flex justify-between items-center"><h2 class="text-2xl">Product Details</h2><button @click="isDetailOpen = false" class="text-3xl text-gray-400 hover:text-black">&times;</button></header>
         <div class="flex-grow overflow-y-auto p-6">
-            <img :src="selectedProduct.image" class="w-full rounded-xl mb-6">
+            <div class="relative mb-6">
+                <img :src="selectedProduct.gallery[currentImageIndex]" :alt="selectedProduct.name" class="w-full h-80 object-contain rounded-xl">
+                <button v-if="selectedProduct.gallery.length > 1" @click.stop="prevImage" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/50 rounded-full p-2 hover:bg-white focus:outline-none"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+                <button v-if="selectedProduct.gallery.length > 1" @click.stop="nextImage" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/50 rounded-full p-2 hover:bg-white focus:outline-none"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+            </div>
+            <div v-if="selectedProduct.gallery.length > 1" class="flex justify-center gap-2 mb-6">
+                <img v-for="(img, index) in selectedProduct.gallery" :key="img" :src="img" @click.stop="currentImageIndex = index" class="h-16 w-16 object-contain rounded-md cursor-pointer gallery-thumbnail" :class="{ 'active': index === currentImageIndex }">
+            </div>
             <h2 class="text-3xl font-extrabold mb-2">{{ selectedProduct.name }}</h2>
             <p class="text-gray-600 mb-6 leading-relaxed">{{ selectedProduct.description }}</p>
             <h3 class="font-bold text-sm uppercase text-gray-500 mb-4">Versions & Prices</h3>
@@ -151,13 +158,11 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
 
-// --- DATA TYPES ---
 interface Variant { variantName: string; price: number; originalPrice?: number; isFeatured?: boolean; }
-interface Product { id: string; name: string; category: string; image: string; description: string; variants: Variant[]; }
+interface Product { id: string; name: string; category: string; gallery: string[]; description: string; variants: Variant[]; }
 interface CartItem { id: string; variantName: string; quantity: number; cartId: string; }
 interface Review { name: string; location: string; stars: number; text: string; }
 
-// --- REACTIVE STATE ---
 const products = ref<Product[]>([]);
 const cart = ref<CartItem[]>([]);
 const searchTerm = ref('');
@@ -165,16 +170,16 @@ const activeCategory = ref('all');
 const isCartOpen = ref(false);
 const isDetailOpen = ref(false);
 const selectedProduct = ref<Product | null>(null);
+const currentImageIndex = ref(0);
 const reviews: Review[] = [ { name: "Mugisha I.", location: "Kampala", stars: 5, text: "Excellent service! My PS5 arrived the same day." }, { name: "Nantongo S.", location: "Entebbe", stars: 5, text: "The iPhone 15 Pro was genuine and sealed. Best prices." }, { name: "Okello J.", location: "Gulu", stars: 4, text: "Good customer care. Helped me choose the right laptop." }, { name: "Achena P.", location: "Kampala", stars: 5, text: "I love my new JBL speaker. The sound is amazing." }, { name: "Byamukama R.", location: "Mbarara", stars: 5, text: "Finally a legit source for gaming accessories." }, { name: "Nakato G.", location: "Jinja", stars: 5, text: "Their pay-on-delivery option is very convenient." }, { name: "Ssentamu D.", location: "Kampala", stars: 4, text: "Great variety of products. Found a rare power bank." }, { name: "Kusiima L.", location: "Kampala", stars: 5, text: "The team is very knowledgeable about MacBooks." }, { name: "Adongo C.", location: "Lira", stars: 5, text: "Trustworthy and reliable. My package arrived safely." }, { name: "Mwesigwa T.", location: "Kampala", stars: 5, text: "The slashed prices are real! Got a great deal." } ];
-
-// --- SANITY.IO CONFIG ---
 const projectId = 'gulhhjx1';
 const dataset = 'production';
-const query = encodeURIComponent('*[_type == "product"]{_id, name, category, description, variants, "image": image.asset->url}');
+const query = encodeURIComponent('*[_type == "product"]{_id, name, category, description, variants, "gallery": gallery[].asset->url}');
 const url = `https://${projectId}.api.sanity.io/v2021-10-21/data/query/${dataset}?query=${query}`;
 const categories = [ { title: 'All', value: 'all' }, { title: 'Smartphones', value: 'smartphones' }, { title: 'Tablets', value: 'tablets' }, { title: 'Smart Watches', value: 'smart-watches' }, { title: 'TVs', value: 'tvs' }, { title: 'Speakers', value: 'speakers' }, { title: 'Laptops', value: 'laptops' }, { title: 'Consoles', value: 'consoles' }, { title: 'Accessories', value: 'accessories' }, ];
 
-// --- COMPUTED PROPERTIES ---
+const duplicatedReviews = computed(() => [...reviews, ...reviews]); // Correctly duplicate reviews for animation
+
 const cartItemCount = computed(() => cart.value.reduce((sum, item) => sum + item.quantity, 0));
 const filteredProducts = computed(() => {
     let filtered = products.value;
@@ -201,7 +206,6 @@ const whatsappCheckoutLink = computed(() => {
     return `https://wa.me/256701618842?text=${encodeURIComponent(message)}`;
 });
 
-// --- METHODS ---
 function formatPrice(price: number) { return `UGX ${price ? price.toLocaleString() : '0'}`; }
 function saveCart() { if (typeof window !== 'undefined') localStorage.setItem('gadgetGuyCart', JSON.stringify(cart.value)); }
 function loadCart() { if (typeof window !== 'undefined') { const savedCart = localStorage.getItem('gadgetGuyCart'); if (savedCart) cart.value = JSON.parse(savedCart); } }
@@ -228,10 +232,21 @@ function removeFromCart(cartId: string) {
 }
 function openProductDetails(product: Product) {
     selectedProduct.value = product;
+    currentImageIndex.value = 0;
     isDetailOpen.value = true;
 }
 function setActiveCategory(category: string) {
     activeCategory.value = category;
+}
+function nextImage() {
+    if (selectedProduct.value) {
+        currentImageIndex.value = (currentImageIndex.value + 1) % selectedProduct.value.gallery.length;
+    }
+}
+function prevImage() {
+    if (selectedProduct.value) {
+        currentImageIndex.value = (currentImageIndex.value - 1 + selectedProduct.value.gallery.length) % selectedProduct.value.gallery.length;
+    }
 }
 function pauseAnimation(event: MouseEvent) {
     const el = event.currentTarget as HTMLElement;
@@ -242,10 +257,8 @@ function resumeAnimation(event: MouseEvent) {
     if (el) el.style.animationPlayState = 'running';
 }
 
-// --- WATCHERS ---
 watch(cart, saveCart, { deep: true });
 
-// --- LIFECYCLE HOOK ---
 onMounted(async () => {
     loadCart();
     try {
@@ -253,7 +266,7 @@ onMounted(async () => {
         const { result } = await response.json();
         products.value = result.map((p: any) => ({
             id: p._id, name: p.name, category: p.category, description: p.description,
-            image: p.image || 'https://placehold.co/400x400?text=No+Image',
+            gallery: (p.gallery && p.gallery.length > 0) ? p.gallery : ['https://placehold.co/400x400?text=No+Image'],
             variants: p.variants || [],
         }));
     } catch (error) { console.error("Failed to fetch products:", error); }

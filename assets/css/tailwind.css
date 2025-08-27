@@ -6,23 +6,23 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: #ffffff;
     color: #1d1d1f;
-    font-weight: 700; /* All text bold by default */
+    font-weight: 700;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4 {
-    font-weight: 800; /* Extra bold headings */
+    font-weight: 800;
 }
 
-/* NEW: Add the animation class here */
+/* Adds the class that makes the animation work */
 @layer components {
   .animate-scroll {
     animation: infinite-scroll 80s linear infinite;
   }
 }
 
-/* NEW: Define the animation keyframes */
+/* Defines the scrolling animation */
 @keyframes infinite-scroll {
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
