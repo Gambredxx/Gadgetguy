@@ -10,7 +10,7 @@
         </div>
       </nav>
       <div class="bg-gray-100 text-center py-3 border-b border-gray-200">
-          <p class="text-sm text-gray-600 font-semibold">Order genuine gadgets and get them delivered to your doorstep.</p>
+          <p class="text-sm text-gray-600 font-semibold">Order genuine gadgets from over 100+ genuine product dealers in uganda and have them delivered to your doorstep.</p>
       </div>
       <section class="bg-gray-100 py-4 border-b border-gray-200">
           <div class="container mx-auto flex items-center gap-4 max-w-3xl px-4">
@@ -38,8 +38,8 @@
     </header>
 
     <main>
-      <div class="bg-blue-600 text-white text-center py-4">
-        <p class="text-lg font-bold animate-pulse">Enjoy a discount on all our products 🔥</p>
+      <div class="bg-red-600 text-white text-center py-4">
+        <p class="text-lg font-bold animate-pulse">Enjoy a discount on all our products today 🔥</p>
       </div>
       
       <section id="all-products" class="bg-white py-16">
