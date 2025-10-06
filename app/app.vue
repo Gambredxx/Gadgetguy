@@ -179,15 +179,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
-import { createClient } from '@sanity/client';
-
-// Initialize Sanity client
-const sanityClient = createClient({
-  projectId: 'your-project-id', // Replace with your Sanity project ID
-  dataset: 'production', // Replace with your dataset name
-  apiVersion: '2023-05-03', // Use a specific API version
-  useCdn: true, // Use CDN for faster responses
-});
 
 interface Variant { variantName: string; price: number; originalPrice?: number; isFeatured?: boolean; }
 interface Product { id: string; name: string; category: string; gallery: string[]; description: string; variants: Variant[]; }
@@ -222,31 +213,98 @@ const categories = [
   { title: 'Accessories', value: 'accessories' }
 ];
 
+// Sample products data - replace with your actual data source
+const sampleProducts: Product[] = [
+  {
+    id: '1',
+    name: 'iPhone 15 Pro',
+    category: 'mobiles',
+    description: 'Latest iPhone with advanced camera system and A17 Pro chip.',
+    gallery: ['/iphone15-pro.jpg'],
+    variants: [
+      { variantName: '128GB', price: 4500000, originalPrice: 4800000, isFeatured: true },
+      { variantName: '256GB', price: 5000000, originalPrice: 5200000 },
+      { variantName: '512GB', price: 5800000, originalPrice: 6000000 }
+    ]
+  },
+  {
+    id: '2',
+    name: 'Samsung Galaxy S24',
+    category: 'mobiles',
+    description: 'Powerful Android smartphone with excellent display and performance.',
+    gallery: ['/samsung-s24.jpg'],
+    variants: [
+      { variantName: '128GB', price: 3800000, originalPrice: 4000000, isFeatured: true },
+      { variantName: '256GB', price: 4200000, originalPrice: 4400000 }
+    ]
+  },
+  {
+    id: '3',
+    name: 'MacBook Air M2',
+    category: 'laptops',
+    description: 'Thin and light laptop with M2 chip for exceptional performance.',
+    gallery: ['/macbook-air-m2.jpg'],
+    variants: [
+      { variantName: '8GB/256GB', price: 5200000, originalPrice: 5500000, isFeatured: true },
+      { variantName: '16GB/512GB', price: 6500000, originalPrice: 6800000 }
+    ]
+  },
+  {
+    id: '4',
+    name: 'PlayStation 5',
+    category: 'gaming',
+    description: 'Next-gen gaming console with 4K graphics and fast loading.',
+    gallery: ['/ps5.jpg'],
+    variants: [
+      { variantName: 'Standard Edition', price: 3200000, originalPrice: 3500000, isFeatured: true },
+      { variantName: 'Digital Edition', price: 2800000, originalPrice: 3000000 }
+    ]
+  },
+  {
+    id: '5',
+    name: 'JBL Flip 6',
+    category: 'audio',
+    description: 'Portable Bluetooth speaker with powerful sound and waterproof design.',
+    gallery: ['/jbl-flip6.jpg'],
+    variants: [
+      { variantName: 'Black', price: 450000, originalPrice: 500000, isFeatured: true },
+      { variantName: 'Blue', price: 450000, originalPrice: 500000 }
+    ]
+  },
+  {
+    id: '6',
+    name: 'Canon EOS R50',
+    category: 'cameras',
+    description: 'Mirrorless camera perfect for vlogging and photography.',
+    gallery: ['/canon-eos-r50.jpg'],
+    variants: [
+      { variantName: 'Body Only', price: 2800000, originalPrice: 3000000, isFeatured: true },
+      { variantName: 'With Kit Lens', price: 3500000, originalPrice: 3800000 }
+    ]
+  }
+];
+
 const fetchProducts = async () => {
   try {
-    const query = `*[_type == "product"] {
-      _id,
-      name,
-      category,
-      "gallery": gallery[].asset->url,
-      description,
-      variants[] { variantName, price, originalPrice, isFeatured }
-    }`;
-    const result = await sanityClient.fetch(query);
-    products.value = result.map((item: any) => ({
-      id: item._id,
-      name: item.name,
-      category: item.category,
-      gallery: item.gallery,
-      description: item.description,
-      variants: item.variants
-    }));
+    // First try to fetch from external JSON file
+    const res = await fetch('/products.json');
+    if (res.ok) {
+      products.value = await res.json();
+    } else {
+      // Fallback to sample data if fetch fails
+      console.log('Using sample products data');
+      products.value = sampleProducts;
+    }
   } catch (err) {
-    console.error('Error fetching products from Sanity:', err);
+    console.error('Error fetching products, using sample data:', err);
+    // Fallback to sample data
+    products.value = sampleProducts;
   }
 };
 
-onMounted(() => { fetchProducts(); });
+onMounted(() => { 
+  fetchProducts(); 
+});
 
 const filteredProducts = computed(() => {
   return products.value.filter(product => {
