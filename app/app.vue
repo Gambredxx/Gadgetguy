@@ -179,6 +179,15 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
+import { createClient } from '@sanity/client';
+
+// Initialize Sanity client
+const sanityClient = createClient({
+  projectId: 'your-project-id', // Replace with your Sanity project ID
+  dataset: 'production', // Replace with your dataset name
+  apiVersion: '2023-05-03', // Use a specific API version
+  useCdn: true, // Use CDN for faster responses
+});
 
 interface Variant { variantName: string; price: number; originalPrice?: number; isFeatured?: boolean; }
 interface Product { id: string; name: string; category: string; gallery: string[]; description: string; variants: Variant[]; }
@@ -215,10 +224,25 @@ const categories = [
 
 const fetchProducts = async () => {
   try {
-    const res = await fetch('/products.json');
-    products.value = await res.json();
+    const query = `*[_type == "product"] {
+      _id,
+      name,
+      category,
+      "gallery": gallery[].asset->url,
+      description,
+      variants[] { variantName, price, originalPrice, isFeatured }
+    }`;
+    const result = await sanityClient.fetch(query);
+    products.value = result.map((item: any) => ({
+      id: item._id,
+      name: item.name,
+      category: item.category,
+      gallery: item.gallery,
+      description: item.description,
+      variants: item.variants
+    }));
   } catch (err) {
-    console.error(err);
+    console.error('Error fetching products from Sanity:', err);
   }
 };
 
