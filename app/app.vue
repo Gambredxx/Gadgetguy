@@ -4,7 +4,7 @@
       <nav class="border-b border-gray-200">
         <div class="container mx-auto px-4 py-4 flex justify-center items-center">
           <a href="/" class="flex items-center gap-3">
-            <img src="/assets/gadgetguyug-logo.png" alt="GadgetGuyUg Logo" class="h-10 w-auto" />
+            <img src="/gadgetguyug-logo.png" alt="GadgetGuyUg Logo" class="h-10 w-auto" />
             <span class="text-xl font-black">GadgetGuyUg</span>
           </a>
         </div>
@@ -172,7 +172,7 @@
     </div>
 
     <a href="https://wa.me/256791494234" target="_blank" class="fixed bottom-8 right-8 z-50 w-16 h-16 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform" aria-label="Chat on WhatsApp">
-      <img src="/assets/whatsapp-button.png" alt="Chat on WhatsApp" class="w-full h-full object-cover rounded-full">
+      <img src="/whatsapp-button.png" alt="Chat on WhatsApp" class="w-full h-full object-cover rounded-full">
     </a>
   </div>
 </template>
@@ -199,88 +199,102 @@ const reviews: Review[] = [
   { name: "Nantongo S.", location: "Entebbe", stars: 5, text: "The iPhone 15 Pro was genuine and sealed. Best prices." },
   { name: "Okello J.", location: "Gulu", stars: 4, text: "Good customer care. Helped me choose the right laptop." },
   { name: "Achena P.", location: "Kampala", stars: 5, text: "I love my new JBL speaker. The sound is amazing." },
-  { name: "Byamukama R.", location: "Mbarara", stars: 5, text: "Finally a legit source for gaming accessories." },
-  { name: "Nakato G.", location: "Jinja", stars: 5, text: "Their pay-on-delivery option is very convenient." },
-  { name: "Ssentamu D.", location: "Kampala", stars: 4, text: "Great variety of products. Found a rare power bank." },
-  { name: "Kusiima L.", location: "Kampala", stars: 5, text: "The team is very knowledgeable about MacBooks." },
-  { name: "Adongo C.", location: "Lira", stars: 5, text: "Trustworthy and reliable. My package arrived safely." },
-  { name: "Mwesigwa T.", location: "Kampala", stars: 5, text: "The slashed prices are real! Got a great deal." }
+  { name: "Byamukama R.", location: "Mbarara", stars: 4, text: "Fast delivery and competitive prices." }
 ];
+const duplicatedReviews = [...reviews, ...reviews];
 
-const duplicatedReviews = computed(() => [...reviews, ...reviews]);
 const categories = [
   { title: 'All', value: 'all' },
-  { title: 'Smartphones', value: 'smartphones' },
-  { title: 'Tablets', value: 'tablets' },
-  { title: 'Smart Watches', value: 'smart-watches' },
-  { title: 'TVs', value: 'tvs' },
-  { title: 'Speakers', value: 'speakers' },
+  { title: 'Mobile Phones', value: 'mobiles' },
   { title: 'Laptops', value: 'laptops' },
-  { title: 'Consoles', value: 'consoles' },
-  { title: 'Accessories', value: 'accessories' },
+  { title: 'Cameras', value: 'cameras' },
+  { title: 'Audio', value: 'audio' },
+  { title: 'Gaming', value: 'gaming' },
+  { title: 'Accessories', value: 'accessories' }
 ];
 
-const projectId = 'gulhhjx1';
-const dataset = 'production';
-const query = encodeURIComponent('*[_type == "product"]{_id, name, category, description, variants, "gallery": gallery[].asset->url}');
-const url = `https://${projectId}.api.sanity.io/v2021-10-21/data/query/${dataset}?query=${query}`;
+const fetchProducts = async () => {
+  try {
+    const res = await fetch('/products.json');
+    products.value = await res.json();
+  } catch (err) {
+    console.error(err);
+  }
+};
 
-const cartItemCount = computed(() => cart.value.reduce((sum, item) => sum + item.quantity, 0));
+onMounted(() => { fetchProducts(); });
+
 const filteredProducts = computed(() => {
-  let filtered = products.value;
-  if (activeCategory.value !== 'all') filtered = filtered.filter(p => p.category === activeCategory.value);
-  if (searchTerm.value.trim()) filtered = filtered.filter(p => p.name.toLowerCase().includes(searchTerm.value.trim().toLowerCase()));
-  return filtered;
+  return products.value.filter(product => {
+    const matchCategory = activeCategory.value === 'all' || product.category === activeCategory.value;
+    const matchSearch = product.name.toLowerCase().includes(searchTerm.value.toLowerCase());
+    return matchCategory && matchSearch;
+  });
 });
-const cartTotalPrice = computed(() => cart.value.reduce((total, item) => {
+
+const setActiveCategory = (category: string) => { activeCategory.value = category; };
+
+const getProductById = (id: string) => products.value.find(p => p.id === id);
+
+function getFeaturedVariant(product: Product): Variant {
+  if (!product.variants || product.variants.length === 0)
+    return { variantName: '', price: 0, originalPrice: 0, isFeatured: false };
+  return product.variants.find(v => v.isFeatured) || product.variants[0];
+}
+
+const getFeaturedPrice = (product: Product) => getFeaturedVariant(product).price;
+const getFeaturedOriginalPrice = (product: Product) => getFeaturedVariant(product).originalPrice;
+
+const formatPrice = (value: number) => `UGX ${value.toLocaleString()}`;
+
+const cartItemCount = computed(() => cart.value.reduce((acc, item) => acc + item.quantity, 0));
+const cartTotalPrice = computed(() => cart.value.reduce((acc, item) => {
   const product = getProductById(item.id);
-  const variant = product?.variants.find(v => v.variantName === item.variantName);
-  return total + (variant ? variant.price * item.quantity : 0);
+  if (!product) return acc;
+  const variant = product.variants.find(v => v.variantName === item.variantName);
+  return acc + (variant?.price || 0) * item.quantity;
 }, 0));
+
+const addToCart = (productId: string, variantName: string) => {
+  const existing = cart.value.find(item => item.id === productId && item.variantName === variantName);
+  if (existing) existing.quantity += 1;
+  else cart.value.push({ id: productId, variantName, quantity: 1, cartId: `${productId}-${variantName}-${Date.now()}` });
+};
+
+const removeFromCart = (cartId: string) => {
+  cart.value = cart.value.filter(item => item.cartId !== cartId);
+};
+
+const getVariantPrice = (productId: string, variantName: string) => {
+  const product = getProductById(productId);
+  if (!product) return 0;
+  const variant = product.variants.find(v => v.variantName === variantName);
+  return variant?.price || 0;
+};
+
 const whatsappCheckoutLink = computed(() => {
-  if (cart.value.length === 0) return '#';
-  let message = "Hello GadgetGuyUg, I'd like to order:\n\n";
+  if (cart.value.length === 0) return '';
+  let text = 'Hello GadgetGuyUg, I would like to order the following products:%0A';
   cart.value.forEach(item => {
     const product = getProductById(item.id);
-    const variant = product?.variants.find(v => v.variantName === item.variantName);
-    if (product && variant) message += `- ${product.name} (${item.variantName}) (x${item.quantity}) - ${formatPrice(variant.price * item.quantity)}\n`;
+    if (product) text += `- ${product.name} (${item.variantName}) x${item.quantity}%0A`;
   });
-  message += `\n*Total: ${formatPrice(cartTotalPrice.value)}*`;
-  return `https://wa.me/256791494234?text=${encodeURIComponent(message)}`;
+  text += `Total: ${formatPrice(cartTotalPrice.value)}`;
+  return `https://wa.me/256791494234?text=${text}`;
 });
 
-function formatPrice(price: number) { return `UGX ${price ? price.toLocaleString() : '0'}`; }
-function saveCart() { if (typeof window !== 'undefined') localStorage.setItem('gadgetGuyCart', JSON.stringify(cart.value)); }
-function loadCart() { if (typeof window !== 'undefined') { const savedCart = localStorage.getItem('gadgetGuyCart'); if (savedCart) cart.value = JSON.parse(savedCart); } }
-function getProductById(productId: string) { return products.value.find(p => p.id === productId); }
-function getVariantPrice(productId: string, variantName: string) { const product = getProductById(productId); const variant = product?.variants.find(v => v.variantName === variantName); return variant ? variant.price : 0; }
-function getFeaturedVariant(product: Product) { if (!product.variants || product.variants.length === 0) return { price: 0, originalPrice: 0, variantName: '' }; return product.variants.find(v => v.isFeatured) || product.variants[0]; }
-function getFeaturedPrice(product: Product) { return getFeaturedVariant(product).price; }
-function getFeaturedOriginalPrice(product: Product) { return getFeaturedVariant(product).originalPrice; }
-function addToCart(productId: string, variantName: string) { const cartId = `${productId}-${variantName}`; const existingItem = cart.value.find(item => item.cartId === cartId); if (existingItem) existingItem.quantity++; else cart.value.push({ id: productId, variantName, quantity: 1, cartId }); }
-function removeFromCart(cartId: string) { cart.value = cart.value.filter(item => item.cartId !== cartId); }
-function openProductDetails(product: Product) { selectedProduct.value = product; currentImageIndex.value = 0; isDetailOpen.value = true; }
-function setActiveCategory(category: string) { activeCategory.value = category; }
-function nextImage() { if (selectedProduct.value) currentImageIndex.value = (currentImageIndex.value + 1) % selectedProduct.value.gallery.length; }
-function prevImage() { if (selectedProduct.value) currentImageIndex.value = (currentImageIndex.value - 1 + selectedProduct.value.gallery.length) % selectedProduct.value.gallery.length; }
-function pauseAnimation(event: MouseEvent) { const el = event.currentTarget as HTMLElement; if (el) el.style.animationPlayState = 'paused'; }
-function resumeAnimation(event: MouseEvent) { const el = event.currentTarget as HTMLElement; if (el) el.style.animationPlayState = 'running'; }
+const openProductDetails = (product: Product) => { selectedProduct.value = product; currentImageIndex.value = 0; isDetailOpen.value = true; };
+const nextImage = () => { if (!selectedProduct.value) return; currentImageIndex.value = (currentImageIndex.value + 1) % selectedProduct.value.gallery.length; };
+const prevImage = () => { if (!selectedProduct.value) return; currentImageIndex.value = (currentImageIndex.value - 1 + selectedProduct.value.gallery.length) % selectedProduct.value.gallery.length; };
 
-watch(cart, saveCart, { deep: true });
-
-onMounted(async () => {
-  loadCart();
-  try {
-    const response = await fetch(url);
-    const { result } = await response.json();
-    products.value = result.map((p: any) => ({
-      id: p._id,
-      name: p.name,
-      category: p.category,
-      description: p.description,
-      gallery: (p.gallery && p.gallery.length > 0) ? p.gallery : ['https://placehold.co/400x400?text=No+Image'],
-      variants: p.variants || [],
-    }));
-  } catch (error) { console.error("Failed to fetch products:", error); }
-});
+let animationPaused = false;
+const pauseAnimation = () => animationPaused = true;
+const resumeAnimation = () => animationPaused = false;
 </script>
+
+<style>
+.gallery-thumbnail { border: 2px solid transparent; }
+.gallery-thumbnail.active { border-color: #3b82f6; }
+.animate-scroll { display: flex; animation: scroll 20s linear infinite; }
+@keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+</style>
