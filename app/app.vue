@@ -10,7 +10,7 @@
         </div>
       </nav>
       <div class="bg-gray-100 text-center py-3 border-b border-gray-200">
-          <p class="text-sm text-gray-600 font-semibold">Order genuine gadgets and getz them delivered to your doorstep.</p>
+          <p class="text-sm text-gray-600 font-semibold">search and order genuine electronic gadgets, sourced from over 100+ trusted Ugandan dealers, with every product backed by a warranty.</p>
       </div>
       <section class="bg-gray-100 py-4 border-b border-gray-200">
           <div class="container mx-auto flex items-center gap-4 max-w-3xl px-4">
@@ -153,7 +153,7 @@
       </div>
     </div>
 
-    <a href="https://wa.me/256701618842" target="_blank" class="fixed bottom-8 right-8 z-50 bg-green-500 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform" aria-label="Chat on WhatsApp">
+    <a href="https://wa.me/256791494234" target="_blank" class="fixed bottom-8 right-8 z-50 bg-green-500 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform" aria-label="Chat on WhatsApp">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8"><path d="M12.001 2C6.478 2 2.001 6.477 2.001 12c0 1.99.589 3.844 1.629 5.44L2 22l4.913-1.54c1.513.882 3.24.137 4.985.137h.002c5.523 0 10-4.477 10-10s-4.477-10-10-10zm0 18h-.002c-1.403 0-2.782-.36-4.028-1.042l-.289-.17-2.983.935.95-2.903-.187-.303c-.72-1.176-1.106-2.557-1.106-3.987 0-4.41 3.59-8 8-8s8 3.59 8 8-3.591 8-8.001 8zm4.33-5.32c-.225-.113-1.328-.655-1.533-.73-.205-.075-.354-.112-.504.112s-.578.73-.708.882c-.13.15-.26.168-.485.056-.225-.113-.948-.35-1.805-1.112-.667-.592-1.112-1.325-1.242-1.55s-.019-.354.094-.465c.101-.1.225-.26.338-.39.112-.13.15-.225.225-.375.075-.15.037-.282-.019-.39s-.504-1.212-.69-1.658c-.18-.43-.368-.375-.504-.382-.13-.008-.282-.008-.432-.008s-.39.056-.6.338c-.205.281-.787.765-.787 1.862s.806 2.158.918 2.308c.112.15 1.575 2.4 3.805 3.325.538.225.96.354 1.287.45.504.15.948.13 1.305.08.39-.057 1.328-.542 1.514-1.066.187-.525.187-.975.13-1.067c-.056-.094-.205-.15-.43-.262z"/></svg>
     </a>
   </div>
@@ -210,7 +210,7 @@ const whatsappCheckoutLink = computed(() => {
         }
     });
     message += `\n*Total: ${formatPrice(cartTotalPrice.value)}*`;
-    return `https://wa.me/256701618842?text=${encodeURIComponent(message)}`;
+    return `https://wa.me/256791494234?text=${encodeURIComponent(message)}`;
 });
 
 function formatPrice(price: number) { return `UGX ${price ? price.toLocaleString() : '0'}`; }
