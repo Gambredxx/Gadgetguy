@@ -38,9 +38,18 @@
     </header>
 
     <main>
-      <div class="bg-blue-600 text-white text-center py-4">
-        <p class="text-lg font-bold animate-pulse">Enjoy a discount on all our products 🔥</p>
-      </div>
+     <div class="bg-blue-600 text-white text-center py-4 flex justify-center items-center gap-2">
+  <p class="text-lg font-bold animate-pulse flex items-center gap-2">
+    Enjoy a discount on all our products 
+    <svg xmlns="http://www.w3.org/2000/svg" 
+         fill="currentColor" 
+         viewBox="0 0 24 24" 
+         class="w-6 h-6 text-yellow-400">
+      <path d="M12 2C10.343 4.5 9 7.3 9 10c0 2.2 1 4 3 5 2-1 3-2.8 3-5 0-2.7-1.343-5.5-3-8zM12 22c5.523 0 10-4.477 10-10 0-4.41-2.86-8.166-6.84-9.5-.33 1.53-.98 2.93-1.85 4.06C15.2 8.42 16 9.96 16 12c0 3.31-2.69 6-6 6s-6-2.69-6-6c0-1.48.54-2.83 1.44-3.87-.88-1.13-1.54-2.53-1.87-4.05C4.86 3.83 2 7.59 2 12c0 5.523 4.477 10 10 10z"/>
+    </svg>
+  </p>
+</div>
+
       
       <section id="all-products" class="bg-white py-16">
         <div class="container mx-auto px-4">
